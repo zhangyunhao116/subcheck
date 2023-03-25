@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,7 +12,11 @@ import (
 	"github.com/zhangyunhao116/skipset"
 )
 
+var delete = flag.Bool("d", false, "Delete all videos that don't have subtitles.")
+
 func main() {
+	flag.Parse()
+
 	var err error
 	curpath, err := os.Getwd()
 	if err != nil {
@@ -60,8 +65,23 @@ func main() {
 		}()
 	}
 	wg.Wait()
+
 	if nosubtitle.Len() != 0 {
-		println("Failed to fetch subtitle: ", nosubtitle.Len())
+		if *delete {
+			nosubtitle.Range(func(value string) bool {
+				command := exec.Command("bash", "-c", "rm "+`"`+value+`"`)
+				out, err := command.CombinedOutput()
+				if err != nil {
+					panic("Delete error: " + err.Error() + "\n" + string(out))
+				}
+				println("Deleted ", value)
+				return true
+			})
+		} else {
+			println("Failed to fetch subtitle: ", nosubtitle.Len())
+		}
+	} else {
+		println("Success!")
 	}
 }
 
