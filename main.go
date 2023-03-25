@@ -22,12 +22,12 @@ func main() {
 	err = filepath.Walk(curpath, func(inputpath string, info os.FileInfo, err error) error {
 		if err == nil && isVideo(inputpath) {
 			allfiles.Add(inputpath)
+			if info.Size() == 0 {
+				panic("invalid size:" + inputpath)
+			}
 		}
 		if err != nil {
 			panic(err)
-		}
-		if info.Size() == 0 {
-			panic("invalid size:" + inputpath)
 		}
 		return nil
 	})
